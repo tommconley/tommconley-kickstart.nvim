@@ -179,12 +179,6 @@ vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagn
 -- or just use <C-\><C-n> to exit terminal mode
 vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
 
--- TIP: Disable arrow keys in normal mode
--- vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
--- vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
--- vim.keymap.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>')
--- vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
-
 -- Keybinds to make split navigation easier.
 --  Use CTRL+<hjkl> to switch between windows
 --
@@ -232,6 +226,9 @@ vim.opt.rtp:prepend(lazypath)
 --
 -- NOTE: Here is where you install your plugins.
 require('lazy').setup({
+  -- For autosave functionality
+  'pocco81/auto-save.nvim',
+
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
 
@@ -398,11 +395,21 @@ require('lazy').setup({
         -- You can put your default mappings / updates / etc. in here
         --  All the info you're looking for is in `:help telescope.setup()`
         --
-        -- defaults = {
-        --   mappings = {
-        --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
-        --   },
-        -- },
+        defaults = {
+          layout_config = {
+            vertical = { height = 0.9 },
+          },
+        },
+        pickers = {
+          lsp_references = { theme = 'dropdown', layout_config = { width = 0.98, height = 0.4 }, previewer = true },
+          diagnostics = {
+            theme = 'dropdown',
+            previewer = false,
+            layout_config = {
+              width = 0.9,
+            },
+          },
+        },
         -- pickers = {}
         extensions = {
           ['ui-select'] = {
@@ -576,6 +583,7 @@ require('lazy').setup({
             end
           end
 
+          -- TODO: Curious!
           -- The following two autocommands are used to highlight references of the
           -- word under your cursor when your cursor rests there for a little while.
           --    See `:help CursorHold` for information about when this is executed
@@ -663,18 +671,17 @@ require('lazy').setup({
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
-        -- clangd = {},
-        -- gopls = {},
-        -- pyright = {},
-        -- rust_analyzer = {},
-        -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
-        --
-        -- Some languages (like typescript) have entire language plugins that can be useful:
-        --    https://github.com/pmizio/typescript-tools.nvim
-        --
-        -- But for many setups, the LSP (`ts_ls`) will work just fine
-        -- ts_ls = {},
-        --
+        ruby_lsp = {},
+        gopls = {
+          settings = {
+            gopls = {
+              analyses = {
+                unusedparams = true,
+              },
+              staticcheck = true,
+            },
+          },
+        },
 
         lua_ls = {
           -- cmd = { ... },
@@ -728,6 +735,7 @@ require('lazy').setup({
     end,
   },
 
+  -- TODO: Do I want this?
   { -- Autoformat
     'stevearc/conform.nvim',
     event = { 'BufWritePre' },
@@ -762,6 +770,7 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
+        go = { 'gofmt' },
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
         --
@@ -771,6 +780,7 @@ require('lazy').setup({
     },
   },
 
+  -- TODO: Do I want this?
   { -- Autocompletion
     'hrsh7th/nvim-cmp',
     event = 'InsertEnter',
@@ -889,25 +899,51 @@ require('lazy').setup({
     end,
   },
 
-  { -- You can easily change to a different colorscheme.
-    -- Change the name of the colorscheme plugin below, and then
-    -- change the command in the config to whatever the name of that colorscheme is.
-    --
-    -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-    'folke/tokyonight.nvim',
-    priority = 1000, -- Make sure to load this before all the other start plugins.
-    config = function()
-      ---@diagnostic disable-next-line: missing-fields
-      require('tokyonight').setup {
-        styles = {
-          comments = { italic = false }, -- Disable italics in comments
-        },
-      }
+  -- TODO: Set up
+  -- {
+  --   'nvim-neotest/neotest',
+  --   dependencies = {
+  --     'nvim-treesitter/nvim-treesitter',
+  --     'nvim-neotest/neotest-go',
+  --   },
+  --   opts = {},
+  --   config = function()
+  --     local neotest = require 'neotest'
+  --
+  --     neotest.setup {
+  --       adapters = {
+  --         -- require 'neotest-rspec' {
+  --         --   rspec_cmd = function()
+  --         --     return vim.tbl_flatten {
+  --         --       'bundle',
+  --         --       'exec',
+  --         --       'rspec',
+  --         --     }
+  --         --   end,
+  --         -- },
+  --         require 'neotest-go',
+  --       },
+  --       output_panel = {
+  --         enabled = true,
+  --         open = 'botright split | resize 15',
+  --       },
+  --       quickfix = {
+  --         open = false,
+  --       },
+  --     }
+  --
+  --     vim.keymap.set('n', '<leader>rt', '<cmd>lua require(\'neotest\').run.run(vim.fn.expand("%"))<CR>', { desc = 'Run Test' })
+  --     vim.keymap.set('n', '<leader>rot', '<cmd>lua require("neotest").output.open({ enter = true })<CR>', { desc = 'Open Test Output' })
+  --   end,
+  -- },
 
-      -- Load the colorscheme here.
-      -- Like many other themes, this one has different styles, and you could load
-      -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-night'
+  {
+    'sainnhe/everforest',
+    priority = 1000,
+    init = function()
+      vim.g.everforest_enable_italic = true
+      vim.g.everforest_background = 'hard'
+      vim.cmd.colorscheme 'everforest'
     end,
   },
 
