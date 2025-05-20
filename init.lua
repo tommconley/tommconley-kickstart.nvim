@@ -898,44 +898,61 @@ require('lazy').setup({
       }
     end,
   },
-
+  { 'nvim-neotest/nvim-nio' },
   -- TODO: Set up
-  -- {
-  --   'nvim-neotest/neotest',
-  --   dependencies = {
-  --     'nvim-treesitter/nvim-treesitter',
-  --     'nvim-neotest/neotest-go',
-  --   },
-  --   opts = {},
-  --   config = function()
-  --     local neotest = require 'neotest'
-  --
-  --     neotest.setup {
-  --       adapters = {
-  --         -- require 'neotest-rspec' {
-  --         --   rspec_cmd = function()
-  --         --     return vim.tbl_flatten {
-  --         --       'bundle',
-  --         --       'exec',
-  --         --       'rspec',
-  --         --     }
-  --         --   end,
-  --         -- },
-  --         require 'neotest-go',
-  --       },
-  --       output_panel = {
-  --         enabled = true,
-  --         open = 'botright split | resize 15',
-  --       },
-  --       quickfix = {
-  --         open = false,
-  --       },
-  --     }
-  --
-  --     vim.keymap.set('n', '<leader>rt', '<cmd>lua require(\'neotest\').run.run(vim.fn.expand("%"))<CR>', { desc = 'Run Test' })
-  --     vim.keymap.set('n', '<leader>rot', '<cmd>lua require("neotest").output.open({ enter = true })<CR>', { desc = 'Open Test Output' })
-  --   end,
-  -- },
+  {
+    'nvim-neotest/neotest',
+    dependencies = {
+      'nvim-treesitter/nvim-treesitter',
+      'nvim-neotest/neotest-go',
+    },
+    opts = {},
+    config = function()
+      local neotest = require 'neotest'
+
+      neotest.setup {
+        adapters = {
+          -- require 'neotest-rspec' {
+          --   rspec_cmd = function()
+          --     return vim.tbl_flatten {
+          --       'bundle',
+          --       'exec',
+          --       'rspec',
+          --     }
+          --   end,
+          -- },
+          require 'neotest-go',
+        },
+        output_panel = {
+          enabled = true,
+          open = 'botright split | resize 15',
+        },
+        quickfix = {
+          open = false,
+        },
+      }
+
+      vim.keymap.set('n', '<leader>rt', '<cmd>lua require(\'neotest\').run.run(vim.fn.expand("%"))<CR>', { desc = 'Run Test' })
+      vim.keymap.set('n', '<leader>rot', '<cmd>lua require("neotest").output.open({ enter = true })<CR>', { desc = 'Open Test Output' })
+    end,
+  },
+  {
+    'robitx/gp.nvim',
+    config = function()
+      local conf = {
+        providers = {
+          openai = {},
+          ollama = {
+            endpoint = 'http://localhost:11434/v1/chat/completions',
+            secret = 'dummy_secret',
+          },
+        },
+      }
+      require('gp').setup(conf)
+
+      -- Setup shortcuts here (see Usage > Shortcuts in the Documentation/Readme)
+    end,
+  },
 
   {
     'sainnhe/everforest',
